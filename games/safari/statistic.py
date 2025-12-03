@@ -1,7 +1,8 @@
+import threading
 from enum import Enum
 
 
-class CowSpecialWheelEnum(Enum):
+class SafariSpecialWheelEnum(Enum):
     free5 = 1
     free10 = 2
     free15 = 3
@@ -13,13 +14,13 @@ class CowSpecialWheelEnum(Enum):
 
     @staticmethod
     def get_bonus_name_by_value(value):
-        for bonus in CowSpecialWheelEnum:
+        for bonus in SafariSpecialWheelEnum:
             if bonus.value == value:
                 return bonus.name
         return None
 
 
-class CowResponseResult:
+class SafariResponseResult:
     def __init__(self, content):
         self.content = content
 
@@ -52,8 +53,9 @@ class CowResponseResult:
         return self.content.get('cownum', None)
 
 
-class CowStatistic:
+class SafariStatistic:
     def __init__(self):
+        self.lock = threading.Lock()
         self.round_count = 0
         self.bet_amount = 0
         self.win_money = 0
@@ -80,8 +82,12 @@ class CowStatistic:
             'jackpot3': 0,
         }
 
+    def round_count_increment(self):
+        with self.lock:
+            self.round_count += 1
+
     def analyze(self, message):
-        self.cow_spin_response = CowResponseResult(message)
+        self.cow_spin_response = SafariResponseResult(message)
 
         self.round_count += 1
 
@@ -108,7 +114,7 @@ class CowStatistic:
 
         if self.cow_spin_response.special_wheel_id != 0:
             # 转盘中的旋转分布
-            special_wheel_name = CowSpecialWheelEnum.get_bonus_name_by_value(self.cow_spin_response.special_wheel_id)
+            special_wheel_name = SafariSpecialWheelEnum.get_bonus_name_by_value(self.cow_spin_response.special_wheel_id)
             self.roulette[special_wheel_name] += 1
 
     def see(self):

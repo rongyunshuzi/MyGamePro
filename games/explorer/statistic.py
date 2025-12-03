@@ -1,4 +1,4 @@
-from logconfig import logger
+import threading
 
 
 class CatResponseResult:
@@ -54,6 +54,7 @@ class CatResponseResult:
 
 class CatStatistic:
     def __init__(self):
+        self.lock = threading.Lock()
         self.total_bet_money = 0  # 总下注金额
         self.win_money = 0  # 赢钱金额
         self.jackpot_money = 0  # jackpot赢钱
@@ -70,9 +71,13 @@ class CatStatistic:
             ['wild', '金币堆', '油灯', '冰锤', '钱袋', '卷轴', '乌鸦', '绿宝石', '火龙', '免费旋转', 'jackpot']
         }
 
+    def round_count_increment(self):
+        with self.lock:
+            self.round_count += 1
+
     def analyze(self, message):
         self._result = CatResponseResult(message)
-        self.round_count += 1
+        self.round_count_increment()
         print("slotCat已完成{}局".format(self.round_count))
 
         self.total_bet_money += self._result.score * 15 / 100

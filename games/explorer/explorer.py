@@ -1,9 +1,8 @@
 import time
-
+import concurrent.futures
 from logconfig import logger
 from services import GameServer
 from statistic import CatStatistic
-import threading
 
 
 class CatGame(GameServer):
@@ -26,7 +25,8 @@ class CatGame(GameServer):
 
     @classmethod
     def jackpot_message_callback(cls, message):
-        logger.success(message)
+        pass
+        # logger.success(message)
 
     def ready(self):
         time.sleep(1)
@@ -54,19 +54,27 @@ class CatGame(GameServer):
                 }
             }
         )
+        time.sleep(0.1)
 
+    @classmethod
+    def spins(cls, round_count):
+        game = CatGame()
+        game.ready()
+        while cls.cat_statistic.round_count < round_count:
+            game.spin()
+
+    @classmethod
+    def persistent_spin(cls, user_number, round_count):
+        with concurrent.futures.ThreadPoolExecutor(max_workers=user_number) as executor:
+            try:
+                tasks = [executor.submit(cls.spins, round_count) for _ in range(user_number)]
+                for task in tasks:
+                    task.result()
+            except KeyboardInterrupt:
+                logger.warning("用户手动退出")
+
+            finally:
+                cls.cat_statistic.see()
 
 if __name__ == '__main__':
-    cat = CatGame()
-    cat.ready()
-
-    try:
-
-        while cat.cat_statistic.round_count < 1000:
-            time.sleep(0.5)
-            cat.spin()
-    except KeyboardInterrupt as e:
-        logger.error(e)
-
-    finally:
-        cat.cat_statistic.see()
+    CatGame.persistent_spin(user_number=10, round_count=1000)

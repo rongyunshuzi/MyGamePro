@@ -1,19 +1,16 @@
-import asyncio
 import time
-
-from logconfig import logger
 from services import GameServer
-from statistic import CowStatistic
+from statistic import FortuneGems2Statistic
+from logconfig import logger
 
 
-class CowGame(GameServer):
-    cow_statistics = CowStatistic()
+class FortuneGems2(GameServer):
+    fortune_gems_2_statistics = FortuneGems2Statistic()
 
     def __init__(self, account=None, password=None):
         GameServer.__init__(self, account, password)
         self.in_room = False
-        self.server.add_message_callback(12072, 2, self.spin_message_callback)
-        self.server.add_message_callback(11010, 2, self.jackpot_message_callback)
+        self.server.add_message_callback(12022, 2, self.spin_message_callback)
 
     def join_room_message_callback(self, message):
         logger.success('join_room_message_callback:{}'.format(message))
@@ -22,11 +19,7 @@ class CowGame(GameServer):
     @classmethod
     def spin_message_callback(cls, message):
         logger.debug(message)
-        CowGame.cow_statistics.analyze(message['content'])
-
-    @classmethod
-    def jackpot_message_callback(cls, message):
-        logger.debug(message)
+        FortuneGems2.fortune_gems_2_statistics.analyze(message['content'])
 
     def ready(self):
         time.sleep(1)
@@ -35,37 +28,38 @@ class CowGame(GameServer):
                 "protocolId": 1,
                 "type": 2,
                 "content": {
-                    "gameId": 1011,
+                    "gameId": 1004,
                     "gameType": 1000
                 }
             }
         )
-        time.sleep(1)
+        time.sleep(2)
         self.game_init()
 
-    def spin(self):
+    def spin(self, is_extra_spin=0):
         self.server.send_message(
             {
-                "protocolId": 2072,
+                "protocolId": 2022,
                 "type": 2,
                 "content": {
-                    "score": 20
+                    "score": 40,
+                    "isExtraSpin": is_extra_spin
                 }
             }
         )
 
 
 if __name__ == '__main__':
-    cow = CowGame()
-    cow.ready()
+    fortune_gems2 = FortuneGems2()
+    fortune_gems2.ready()
 
     try:
 
-        while cow.cow_statistics.round_count < 1000:
+        while fortune_gems2.fortune_gems_2_statistics.round_count < 1000:
             time.sleep(0.1)
-            cow.spin()
+            fortune_gems2.spin()
     except KeyboardInterrupt as e:
-        logger.error(e)
+        logger.warning("用户手动退出")
 
     finally:
-        cow.cow_statistics.see()
+        fortune_gems2.fortune_gems_2_statistics.see()

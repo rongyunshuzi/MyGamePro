@@ -42,7 +42,7 @@ class IWebsocket:
     async def _receive_loop(self):
         async for message in self.ws:
             data = json.loads(message)
-            logger.success(data)
+            # logger.success(data)
             k = f"{data['protocolId']}_{data['type']}"
             if k in self.message_callback:
                 self.message_callback[k](data)

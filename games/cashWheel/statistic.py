@@ -48,10 +48,10 @@ class CashWheelStatistic:
         with self.thread_lock:
             self.round_count += 1
 
-        self.bet_amount += spin_response.bet_amount
+        self.bet_amount += spin_response.bet_amount / 100
 
         if spin_response.win_money:
-            self.win_money += spin_response.win_money
+            self.win_money += spin_response.win_money / 100
 
         if spin_response.free_times:
             self.free_count += spin_response.free_times

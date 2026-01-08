@@ -62,6 +62,7 @@ class BuffaloGame(GameServer):
         buffalo.ready()
         while cls.statistics.round_count < round_count:
             buffalo.spin()
+            time.sleep(.1)
 
     @classmethod
     def persistent_spin(cls, user_number, round_count):
@@ -77,5 +78,5 @@ class BuffaloGame(GameServer):
                 cls.statistics.see()
 
 if __name__ == '__main__':
-    BuffaloGame.persistent_spin(user_number=10, round_count=1000)
+    BuffaloGame.persistent_spin(user_number=100, round_count=10000)
 

@@ -102,6 +102,7 @@ class BuffaloStatistic:
                         break
 
         if spin_result.free_times:
+            self.free_spin_count += spin_result.free_times
             for free in spin_result.free_spins:
                 if free['winmoney']:
                     self.free_amount += free['winmoney'] / 100
@@ -113,15 +114,21 @@ class BuffaloStatistic:
     def see(self):
         r = f"""
 ================================SlotSafari测试结果汇总========================================
-总对局数:{self.round_count}, 总下注金额:{self.bet_amount}, 总赢钱金额:{round(self.win_money, 2)}
+总对局数:{self.round_count}, 
+总下注金额:{self.bet_amount}, 
+总赢钱金额:{round(self.win_money, 2)}
 返奖率:{round((self.win_money + self.jackpot_amount) / self.bet_amount * 100, 2)}%
-
 基础中奖符号分布:
-    {self.symbols[0]['name']}:{self.symbols[0]['count']}, {self.symbols[1]['name']}:{self.symbols[1]['count']}, 
-    {self.symbols[2]['name']}:{self.symbols[2]['count']}, {self.symbols[3]['name']}:{self.symbols[3]['count']}, 
-    {self.symbols[4]['name']}:{self.symbols[4]['count']}, {self.symbols[5]['name']}:{self.symbols[5]['count']}, 
-    {self.symbols[6]['name']}:{self.symbols[6]['count']}, {self.symbols[7]['name']}:{self.symbols[7]['count']}, 
-    {self.symbols[8]['name']}:{self.symbols[8]['count']}, {self.symbols[9]['name']}:{self.symbols[9]['count']}, 
+    {self.symbols[0]['name']}:{self.symbols[0]['count']}, 
+    {self.symbols[1]['name']}:{self.symbols[1]['count']}, 
+    {self.symbols[2]['name']}:{self.symbols[2]['count']}, 
+    {self.symbols[3]['name']}:{self.symbols[3]['count']}, 
+    {self.symbols[4]['name']}:{self.symbols[4]['count']}, 
+    {self.symbols[5]['name']}:{self.symbols[5]['count']}, 
+    {self.symbols[6]['name']}:{self.symbols[6]['count']}, 
+    {self.symbols[7]['name']}:{self.symbols[7]['count']}, 
+    {self.symbols[8]['name']}:{self.symbols[8]['count']}, 
+    {self.symbols[9]['name']}:{self.symbols[9]['count']}, 
     {self.symbols[10]['name']}:{self.symbols[10]['count']},
 
 JACKPOT赢钱金额:{round(self.jackpot_amount, 2)}
@@ -130,13 +137,19 @@ JACKPOT触发分布:
     4个jackpot符号:{self.jackpot_num['4']}
     5个jackpot符号:{self.jackpot_num['5']}
     
-FreeSpin对局数:{self.free_spin_count}, FreeSpin赢钱金额:{round(self.free_amount, 2)}
+FreeSpin对局数:{self.free_spin_count}, 
+FreeSpin赢钱金额:{round(self.free_amount, 2)}
 FreeSpin中奖符号分布:
-    {self.free_symbols[0]['name']}:{self.free_symbols[0]['count']}, {self.free_symbols[1]['name']}:{self.free_symbols[1]['count']}, 
-    {self.free_symbols[2]['name']}:{self.free_symbols[2]['count']}, {self.free_symbols[3]['name']}:{self.free_symbols[3]['count']}, 
-    {self.free_symbols[4]['name']}:{self.free_symbols[4]['count']}, {self.free_symbols[5]['name']}:{self.free_symbols[5]['count']}, 
-    {self.free_symbols[6]['name']}:{self.free_symbols[6]['count']}, {self.free_symbols[7]['name']}:{self.free_symbols[7]['count']}, 
-    {self.free_symbols[8]['name']}:{self.free_symbols[8]['count']}, {self.free_symbols[9]['name']}:{self.free_symbols[9]['count']}, 
+    {self.free_symbols[0]['name']}:{self.free_symbols[0]['count']}, 
+    {self.free_symbols[1]['name']}:{self.free_symbols[1]['count']}, 
+    {self.free_symbols[2]['name']}:{self.free_symbols[2]['count']}, 
+    {self.free_symbols[3]['name']}:{self.free_symbols[3]['count']}, 
+    {self.free_symbols[4]['name']}:{self.free_symbols[4]['count']}, 
+    {self.free_symbols[5]['name']}:{self.free_symbols[5]['count']}, 
+    {self.free_symbols[6]['name']}:{self.free_symbols[6]['count']}, 
+    {self.free_symbols[7]['name']}:{self.free_symbols[7]['count']}, 
+    {self.free_symbols[8]['name']}:{self.free_symbols[8]['count']}, 
+    {self.free_symbols[9]['name']}:{self.free_symbols[9]['count']}, 
     {self.free_symbols[10]['name']}:{self.free_symbols[10]['count']},
 =========================================================================================
         """

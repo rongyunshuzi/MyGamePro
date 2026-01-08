@@ -1,3 +1,4 @@
+import concurrent.futures
 import time
 from services import GameServer
 from statistic import GaneshaGoldStatistic
@@ -47,18 +48,27 @@ class GaneshaGold(GameServer):
             }
         )
 
+    @classmethod
+    def spins(cls, round_count):
+        buffalo = GaneshaGold()
+        buffalo.ready()
+        while cls.statistic.round_count < round_count:
+            buffalo.spin()
+            time.sleep(.1)
+
+    @classmethod
+    def persistent_spin(cls, user_number, round_count):
+        with concurrent.futures.ThreadPoolExecutor(max_workers=user_number) as executor:
+            try:
+                tasks = [executor.submit(cls.spins, round_count) for _ in range(user_number)]
+                for task in tasks:
+                    task.result()
+            except KeyboardInterrupt:
+                logger.warning("用户手动退出")
+
+            finally:
+                cls.statistic.see()
 
 if __name__ == '__main__':
-    ganesha_gold = GaneshaGold()
-    ganesha_gold.ready()
+    GaneshaGold.persistent_spin(user_number=10, round_count=1000)
 
-    try:
-
-        while ganesha_gold.statistic.round_count < 1000:
-            time.sleep(0.1)
-            ganesha_gold.spin()
-    except KeyboardInterrupt as e:
-        logger.warning("用户手动退出")
-
-    finally:
-        ganesha_gold.statistic.see()

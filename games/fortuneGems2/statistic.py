@@ -33,6 +33,10 @@ class FortuneGems2ResponseResult:
     def special_wheel_cash(self):
         return self.content['specialWheelCash']
 
+    @property
+    def base_multiplier(self):
+        return self.content['baseMultiplier']
+
 
 class FortuneGems2Statistic:
     def __init__(self):
@@ -45,21 +49,21 @@ class FortuneGems2Statistic:
         self.special_wheel_amount = 0  # 轮盘中奖总金额
 
     def analyze(self, message):
-        fortune_gems_2_spin_response = FortuneGems2ResponseResult(message)
+        spin_response = FortuneGems2ResponseResult(message)
         with self.thread_lock:
             self.round_count += 1
 
             # 轮盘
-            if fortune_gems_2_spin_response.special_wheel_cash:
+            if spin_response.special_wheel_cash:
                 self.special_wheel_count += 1
-                self.special_wheel_amount += fortune_gems_2_spin_response.special_wheel_cash / 100
+                self.special_wheel_amount += spin_response.special_wheel_cash / 100
 
             # 中奖线
-            if fortune_gems_2_spin_response.win_money:
+            if spin_response.win_money:
                 self.pay_line_count += 1
-                self.pay_line_amount += fortune_gems_2_spin_response.win_money / 100
+                self.pay_line_amount += spin_response.win_money * spin_response.base_multiplier  / 100
 
-                for line in fortune_gems_2_spin_response.line_result:
+                for line in spin_response.line_result:
                     if line['itemName'] == "百搭":
                         self.wild_count += 1
 

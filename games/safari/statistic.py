@@ -25,10 +25,6 @@ class SafariResponseResult:
         self.content = content
 
     @property
-    def bet_score(self):
-        return self.content['betScore']
-
-    @property
     def win_money(self):
         return self.content['winmoney']
 
@@ -41,103 +37,153 @@ class SafariResponseResult:
         return self.content['freeSpins']
 
     @property
-    def line_result(self):
-        return self.content['lineresult']
+    def niunum(self):
+        return self.content['niunum']
 
     @property
     def special_wheel_id(self):
         return self.content['specialWheelId']
 
     @property
-    def cow_num(self):
-        return self.content.get('cownum', None)
+    def special_wheel_cash(self):
+        return self.content['specialWheelCash']
+
+    @property
+    def wild_num(self):
+        return self.content['wildnum']
+
+    @property
+    def wild_type(self):
+        return self.content['wildtype']
+
+    @property
+    def lucky_jackpot(self):
+        return self.content['luckyjackpot']
+
+    @property
+    def current_lucky_jackpot(self):
+        return self.content['currentluckyjackpot']
 
 
 class SafariStatistic:
     def __init__(self):
         self.lock = threading.Lock()
         self.round_count = 0
-        self.bet_amount = 0
+        self.win_count = 0  # 直接中奖（不算免费，WILD）次数
         self.win_money = 0
-        self.free_spin_count = 0
-        self.free_spin_money = 0
-        self.cow_spin_response = None
-        self.jackpot_count = 0
-        self.jackpot_money = 0
-        self.jackpot = 0
-        self.cow_num = 0
-        self.win_line_symbols = {
-            s: {3: 0, 4: 0, 5: 0}
-            for s in
-            ['百搭', '10', 'J', 'Q', 'K', 'A', '狼', '老虎', '鹰', '鹿', '牛']
-        }
-        self.roulette = {
-            'free5': 0,
-            'free10': 0,
-            'free15': 0,
-            'wild_single': 0,
-            'wild_double': 0,
-            'jackpot1': 0,
-            'jackpot2': 0,
-            'jackpot3': 0,
-        }
+        self.free_round_count = 0  # 触发免费局数
+        self.free_spin_count = 0  # 免费旋转次数
+        self.free_spin_money = 0  # 免费旋转中奖金额
+        self.niu_count = 0  # 3牛以上中奖次数
+        self.niu_othersum = 0  # 3牛以上中奖次数
+        self.lucky_jackpot_money = 0
+        self.special_free_spin_round_count = 0  # 转盘里触发免费旋转次数
+        self.special_free_spin_count = 0  # 转盘里触发免费旋转局数
+        self.special_free_spin_money = 0  # 转盘里触发免费旋转金额
+        self.special_jackpot_round_count = 0  # 转盘里触发jackpot局数
+        self.special_jackpot_money = 0  # 转盘里触发jackpot中奖金额
+        self.special_wild_single_round_count = 0  # 触发单列免费旋转局数
+        self.special_wild_single_amount = 0  # 触发单列免费旋转中奖金额
+        self.special_wild_double_round_count = 0  # 触发双列免费旋转局数
+        self.special_wild_double_amount = 0  # 触发双列免费旋转中奖金额
 
-    def round_count_increment(self):
+    def analyze(self, message):
+        response = SafariResponseResult(message)
         with self.lock:
             self.round_count += 1
 
-    def analyze(self, message):
-        self.cow_spin_response = SafariResponseResult(message)
+        if 0 < response.niunum < 3:
+            self.niu_othersum += response.niunum
+        elif response.niunum >= 3:
+            self.niu_count += 1
+            self.lucky_jackpot_money += response.current_lucky_jackpot / 100
 
-        self.round_count += 1
 
-        self.bet_amount += self.cow_spin_response.bet_score * 9 / 100
+            # 直接中奖
+        if response.special_wheel_id == 0:
+            if response.wild_type == 0:
+                if response.win_money:
+                    self.win_count += 1  # 直接中奖（不算免费，WILD）次数
+                    self.win_money += response.win_money / 100  # 直接中奖（不算免费，WILD）总额
 
-        self.cow_num += self.cow_spin_response.cow_num if self.cow_spin_response.cow_num else 0
+                if response.free_times:
+                    self.free_round_count += 1  # 触发免费局数
+                    self.free_spin_count += response.free_times  # 免费旋转次数
 
-        if self.cow_spin_response.win_money > 0:
-            # 赢钱统计
-            self.win_money += self.cow_spin_response.win_money / 100
+                    for free in response.free_spins:
+                        self.free_spin_money += free['winmoney'] / 100  # 免费旋转中奖金额
 
-            for result in self.cow_spin_response.line_result:
-                for symbol in self.win_line_symbols:
-                    if symbol == result['itemName']:
-                        self.win_line_symbols[symbol][result['num']] += 1
-                        break
 
-        if self.cow_spin_response.free_spins:
-            # 免费次数统计
-            self.free_spin_count += self.cow_spin_response.free_times
+            elif response.wild_type == 1:
+                self.special_wild_single_amount += response.win_money / 100
 
-            for free in self.cow_spin_response.free_spins:
-                self.free_spin_money += free['winmoney'] / 100
+            elif response.wild_type == 2:
+                self.special_wild_double_amount += response.win_money / 100
 
-        if self.cow_spin_response.special_wheel_id != 0:
-            # 转盘中的旋转分布
-            special_wheel_name = SafariSpecialWheelEnum.get_bonus_name_by_value(self.cow_spin_response.special_wheel_id)
-            self.roulette[special_wheel_name] += 1
+        if response.special_wheel_id == 1:
+            self.special_free_spin_round_count += 1
+            self.special_free_spin_count += 5
+
+            for free in response.free_spins:
+                self.special_free_spin_money += free['winmoney'] / 100
+
+        if response.special_wheel_id == 2:
+            self.special_free_spin_round_count += 1
+            self.special_free_spin_count += 10
+
+            for free in response.free_spins:
+                self.special_free_spin_money += free['winmoney'] / 100
+
+        if response.special_wheel_id == 3:
+            self.special_free_spin_round_count += 1
+            self.special_free_spin_count += 15
+
+            for free in response.free_spins:
+                self.special_free_spin_money += free['winmoney'] / 100
+
+        if response.special_wheel_id == 4:
+            self.special_wild_single_round_count += 1
+
+        if response.special_wheel_id == 5:
+            self.special_wild_double_round_count += 1
+
+        if response.special_wheel_id == 6:
+            self.special_jackpot_round_count += 1
+            self.special_jackpot_money += response.special_wheel_cash / 100
+
+        if response.special_wheel_id == 7:
+            self.special_jackpot_round_count += 1
+            self.special_jackpot_money += response.special_wheel_cash / 100
+
+        if response.special_wheel_id == 8:
+            self.special_jackpot_round_count += 1
+            self.special_jackpot_money += response.special_wheel_cash / 100
 
     def see(self):
         r = f"""
         ================================SlotCow测试结果汇总========================================
-        总对局数:{self.round_count}, 总下注金额:{round(self.bet_amount, 2)}, 总赢钱金额:{round(self.win_money, 2)}
-        基础赢钱线分布:百搭:{self.win_line_symbols['百搭']}, 10:{self.win_line_symbols['10']}, 
-                      J:{self.win_line_symbols['J']}, Q:{self.win_line_symbols['Q']}, 
-                      K:{self.win_line_symbols['K']}, A:{self.win_line_symbols['A']}, 
-                      狼:{self.win_line_symbols['狼']}, 老虎:{self.win_line_symbols['老虎']}, 
-                      鹰:{self.win_line_symbols['鹰']}, 鹿:{self.win_line_symbols['鹿']}, 
-                      牛:{self.win_line_symbols['牛']}
-                      
-        转盘命中分布: free5:{self.roulette['free5']}, free10:{self.roulette['free10']},
-                    free15:{self.roulette['free15']}, wild_single:{self.roulette['wild_single']},
-                    wild_double:{self.roulette['wild_double']}, jackpot1:{self.roulette['jackpot1']},
-                    jackpot2:{self.roulette['jackpot2']}, jackpot3:{self.roulette['jackpot3']},
-                    
-        jackpot触发次数:{self.jackpot_count}, jackpot赢钱金额:{round(self.jackpot_money, 2)}
-        jackpot触发分布: {self.jackpot}
-        freeSpin对局数:{self.free_spin_count}, freeSpin赢钱金额:{round(self.free_spin_money, 2)}
-        牛符号出现次数:{self.cow_num}
-        返奖率:{round((self.win_money + self.jackpot_money) / self.bet_amount * 100, 2)}%
+        = 对局数：{self.round_count}
         =========================================================================================
+        = 直接中奖（不算免费，WILD）次数: {self.win_count}
+        = 直接中奖（不算免费，WILD）总额: {self.win_money}
+        = 3鹿触发次数（1次3鹿以上算1次）: {self.free_round_count}
+        = 3鹿免费旋转次数：{self.free_spin_count}
+        = 3鹿触发免费旋转中奖金额: {self.free_spin_money}
+        = 幸运奖: {self.lucky_jackpot_money},1-2牛总数量:{self.niu_othersum}
+        =========================================================================================
+        = 3牛以上中奖次数:{self.niu_count}
+        =========================================================================================                   
+        = 转盘里触发免费旋转次数：{self.special_free_spin_round_count}
+        = 转盘里触发免费旋转局数：{self.special_free_spin_count} 
+        = 转盘里触发免费旋转金额：{self.special_free_spin_money}
+        =========================================================================================
+        = 转盘里触发jackpot次数: {self.special_jackpot_round_count}
+        = 转盘里触发jackpot金额: {self.special_jackpot_money}
+        =========================================================================================
+        = 触发单列免费旋转次数: {self.special_wild_single_round_count}
+        = 触发单列免费旋转金额: {self.special_wild_single_amount}
+        =========================================================================================
+        = 触发双列免费旋转次数: {self.special_wild_double_round_count}
+        = 触发双列免费旋转金额: {self.special_wild_double_amount}
         """
         print(r)

@@ -70,26 +70,25 @@ class AuthServer:
             headers={'Content-Type': 'application/json'},
         )
         if response.status_code == 200:
-            data = response.json()
-
-            self.account, self.password = data['account'], data['passWord']
-            self._login(self.account, self.password)
+            self.token = response.json()['data']['token']
+            self._login_info(self.token)
 
         else:
             logger.error(response.json()['msg'])
 
-    def _login(self, account, password):
+    def _login_info(self, token):
 
         response = self.http.post(
-            url=self.host + '/gameHall/auth/login',
-            json=json.dumps({'account': account, 'passWord': password}),
-            headers={'Content-Type': 'application/json'},
+            url=self.host + '/gameHall/auth/loginInfo',
+            headers={'Content-Type': 'application/json', 'authorization': token},
         )
 
         if response.status_code == 200:
             data = response.json()['data']
             self.user_id = data['userId']
-            self.token = data['token']
+            self.account = data['account']
+            self.phone = data['phone']
+            self.nickname = data['nickname']
             return self
         else:
             logger.error(response.json()['msg'])
@@ -149,7 +148,3 @@ class GameServer(Server):
         time.sleep(2)
 
 
-if __name__ == '__main__':
-    auth_server = AuthServer()
-    auth_server.register_or_login('1556666543')
-    print(auth_server.__dict__)

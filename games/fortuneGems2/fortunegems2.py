@@ -36,7 +36,7 @@ class FortuneGems2(GameServer):
         time.sleep(2)
         self.game_init()
 
-    def spin(self, is_extra_spin=0):
+    def spin(self, is_extra_spin=1):
         self.server.send_message({
             "protocolId": 2022,
             "type": 2,

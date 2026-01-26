@@ -1,4 +1,5 @@
 import concurrent.futures
+import random
 import time
 
 from logconfig import logger
@@ -9,8 +10,8 @@ from statistic import SafariStatistic
 class SafariGame(GameServer):
     statistics = SafariStatistic()
 
-    def __init__(self, account=None, password=None):
-        GameServer.__init__(self, account, password)
+    def __init__(self):
+        GameServer.__init__(self)
         self.in_room = False
         self.server.add_message_callback(12072, 2, self.spin_message_callback)
         self.server.add_message_callback(11010, 2, self.jackpot_message_callback)
@@ -21,7 +22,7 @@ class SafariGame(GameServer):
 
     @classmethod
     def spin_message_callback(cls, message):
-        logger.debug(message)
+        logger.success(message)
         cls.statistics.analyze(message['content'])
 
     @classmethod
@@ -49,11 +50,11 @@ class SafariGame(GameServer):
                 "protocolId": 2072,
                 "type": 2,
                 "content": {
-                    "score": 20
+                    "score": 1000
                 }
             }
         )
-        time.sleep(0.1)
+
 
     @classmethod
     def spins(cls, round_count):
@@ -61,6 +62,7 @@ class SafariGame(GameServer):
         safari.ready()
         while cls.statistics.round_count < round_count:
             safari.spin()
+            time.sleep(random.uniform(0.4, 0.5))
 
     @classmethod
     def persistent_spin(cls, user_number, round_count):
@@ -71,10 +73,11 @@ class SafariGame(GameServer):
                     task.result()
             except KeyboardInterrupt:
                 logger.warning("用户手动退出")
+                cls.statistics.see()
 
             finally:
                 cls.statistics.see()
 
 
 if __name__ == '__main__':
-    SafariGame.persistent_spin(user_number=10, round_count=1000)
+    SafariGame.persistent_spin(user_number=100, round_count=100000)

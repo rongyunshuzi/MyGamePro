@@ -29,6 +29,10 @@ class MoneyComingResponseResult:
     def free_spins(self):
         return self.content['freeSpins']
 
+    @property
+    def base_multiplier(self):
+        return self.content['baseMultiplier']
+
 
 class MoneyComingStatistic:
     def __init__(self):
@@ -49,18 +53,18 @@ class MoneyComingStatistic:
             # 基础旋转
             if spin_response.win_money:
                 self.win_count += 1
-                self.win_money = spin_response.win_money / 100
+                self.win_money += spin_response.win_money * spin_response.base_multiplier / 100
 
             # 轮盘
             if spin_response.wheel_cash:
                 self.wheel_count += 1
-                self.wheel_money = spin_response.wheel_cash / 100
+                self.wheel_money += spin_response.wheel_cash / 100
 
             # 重转
             if spin_response.free_spins:
                 self.free_count += 1
                 for fs in spin_response.free_spins:
-                    self.free_money += fs['winMoney'] / 100
+                    self.free_money += fs['winMoney'] * fs['baseMultiplier'] / 100
 
     def see(self):
         r = f"""

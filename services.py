@@ -119,22 +119,33 @@ class GameServer(Server):
         self.server.add_message_callback(10001, 2, self.join_room_message_callback)
         self.server.add_message_callback(0, 4, self.connect_websocket_message_callback)
         self.server.add_message_callback(11012, 2, self.broadcast_notice_message_callback)
+        self.server.add_message_callback(11002, 4, self.insufficient_balance_message_callback)
 
     def join_room_message_callback(self, message):
+        """加入房间消息回调 """
         logger.success('join_room_message_callback:{}'.format(message))
 
     @staticmethod
     def connect_websocket_message_callback(message):
+        """websocket服务连接成功消息回调"""
         logger.success("connect websocket callback:{}".format(message))
 
     def keep_alive_message_callback(self, message, output=False):
+        """心跳消息回调"""
         self.server.connected = True
         if not output:
             return
         logger.debug('keep_alive_message_callback:{}'.format(message))
 
     @staticmethod
+    def insufficient_balance_message_callback(message):
+        """余额不足消息回调"""
+        content = message['content']
+        logger.error('insufficient_balance:{}'.format(content))
+
+    @staticmethod
     def broadcast_notice_message_callback(message, output=False):
+        """广播消息回调"""
         if not output:
             return
         content = message['content']

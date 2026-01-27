@@ -1,7 +1,6 @@
 import asyncio
 import json
 import threading
-import time
 
 import websockets
 from logconfig import logger
@@ -66,46 +65,3 @@ class IWebsocket:
     def send_message(self, message):
         """发送消息"""
         asyncio.run_coroutine_threadsafe(self._send(message), self.loop)
-
-
-def main():
-    ws_url = 'ws://172.16.40.124:8092/gameLogic?account=0057e4968b0c382a8e1026ed54e7b27e&token=eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiIwMDU3ZTQ5NjhiMGMzODJhOGUxMDI2ZWQ1NGU3YjI3ZSIsImlhdCI6MTc2Mzk4Mjg0MCwiZXhwIjoxNzY0NTg3NjQwfQ.rl7-k_1MtgoawFsj_f8fTz9jLUBlVVzGjUeDt70uO8FSLJxvBIc4butIht4Ebrhq&userId=709926cf9d0'
-
-    iw = IWebsocket(ws_url)
-    iw.initialize()
-    time.sleep(1)
-    iw.send_message(
-        {
-            "protocolId": 1,
-            "type": 2,
-            "content": {
-                "gameId": 1001,
-                "gameType": 1000
-            }
-        }
-    )
-    time.sleep(1)
-
-    iw.send_message(
-        {
-            'type': 2,
-            'protocolId': 3,
-        }
-    )
-
-    while True:
-        time.sleep(0.1)
-        iw.send_message(
-            {
-                "protocolId": 2002,
-                "type": 2,
-                "content": {
-                    "score": 20
-                }
-            }
-        )
-
-
-
-if __name__ == '__main__':
-    main()

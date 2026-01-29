@@ -3,23 +3,13 @@ import random
 import time
 
 from iws import IWebsocket
-from logconfig import logger
+import config
 import httpx
-
-server_host = '192.168.0.168'
-
-auth_server_host = "http://{}:8083".format(server_host)
-mall_server_host = 'ws://{}:8091'.format(server_host)
-game_server_host = 'ws://{}:8092'.format(server_host)
 
 
 class AuthServer:
     def __init__(self):
-        self.host = auth_server_host
         self.account = None
-        self.password = None
-        self.token = None
-        self.username = None
         self.user_id = None
         self.token = None
         self.phone = self.get_random_phone_number()
@@ -43,23 +33,23 @@ class AuthServer:
     def _get_sms_code(self, channels='501'):
         response = self.http.post(
             headers={'Content-Type': 'application/json'},
-            url=self.host + '/gameHall/auth/sendRegisterAndLoginCode',
+            url=config.AUTHENTICATION_SERVER + '/gameHall/auth/sendRegisterAndLoginCode',
             json=json.dumps({
                 'phone': self.phone, 'userChannels': channels
             })
         )
 
         if response.status_code == 200:
-            logger.success(response.json()['msg'])
+            config.logger.success(response.json()['msg'])
 
         else:
-            logger.error(response.json()['msg'])
+            config.logger.error(response.json()['msg'])
 
     def register_or_login(self, invite_code="", channels='501'):
         self._get_sms_code()
 
         response = self.http.post(
-            url=self.host + '/gameHall/auth/phone/registerAndLogin',
+            url=config.AUTHENTICATION_SERVER + '/gameHall/auth/phone/registerAndLogin',
             json={
                 'code': '111111',
                 'deviceId': "7be8e85b-29a0-48af-8703-80d4808fa387",
@@ -74,12 +64,12 @@ class AuthServer:
             self._login_info(self.token)
 
         else:
-            logger.error(response.json()['msg'])
+            config.logger.error(response.json()['msg'])
 
     def _login_info(self, token):
 
         response = self.http.post(
-            url=self.host + '/gameHall/auth/loginInfo',
+            url=config.AUTHENTICATION_SERVER + '/gameHall/auth/loginInfo',
             headers={'Content-Type': 'application/json', 'authorization': token},
         )
 
@@ -91,7 +81,7 @@ class AuthServer:
             self.nickname = data['nickname']
             return self
         else:
-            logger.error(response.json()['msg'])
+            config.logger.error(response.json()['msg'])
             return None
 
 
@@ -112,7 +102,7 @@ class GameServer(Server):
 
     def __init__(self):
         Server.__init__(self)
-        url = self.build_websocket_url(game_server_host, 'gameLogic')
+        url = self.build_websocket_url(config.GAME_SERVER, 'gameLogic')
         self.server = IWebsocket(url)
         self.server.initialize()
         self.server.add_message_callback(0, 30000, self.keep_alive_message_callback)
@@ -123,25 +113,25 @@ class GameServer(Server):
 
     def join_room_message_callback(self, message):
         """加入房间消息回调 """
-        logger.success('join_room_message_callback:{}'.format(message))
+        config.logger.success('join_room_message_callback:{}'.format(message))
 
     @staticmethod
     def connect_websocket_message_callback(message):
         """websocket服务连接成功消息回调"""
-        logger.success("connect websocket callback:{}".format(message))
+        config.logger.success("connect websocket callback:{}".format(message))
 
     def keep_alive_message_callback(self, message, output=False):
         """心跳消息回调"""
         self.server.connected = True
         if not output:
             return
-        logger.debug('keep_alive_message_callback:{}'.format(message))
+        config.logger.debug('keep_alive_message_callback:{}'.format(message))
 
     @staticmethod
     def insufficient_balance_message_callback(message):
         """余额不足消息回调"""
         content = message['content']
-        logger.error('insufficient_balance:{}'.format(content))
+        config.logger.error('insufficient_balance:{}'.format(content))
 
     @staticmethod
     def broadcast_notice_message_callback(message, output=False):
@@ -149,7 +139,7 @@ class GameServer(Server):
         if not output:
             return
         content = message['content']
-        logger.info("{} {} {} in {}".format(
+        config.logger.info("{} {} {} in {}".format(
             content['nickName'], content['typeName'], content['amount'], content['gameName'])
         )
 
@@ -157,5 +147,3 @@ class GameServer(Server):
         """初始化游戏，加入游戏房间后必须调用"""
         self.server.send_message({'type': 2, 'protocolId': 3})
         time.sleep(2)
-
-

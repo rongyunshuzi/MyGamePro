@@ -1,4 +1,4 @@
-from logconfig import logger
+from config import logger
 
 
 class ThorResponseResult:

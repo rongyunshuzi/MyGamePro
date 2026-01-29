@@ -1,7 +1,0 @@
-colorama==0.4.6
-loguru==0.7.3
-setuptools==80.9.0
-websockets==15.0.1
-wheel==0.45.1
-win32_setctime==1.2.0
-httpx==0.28.1

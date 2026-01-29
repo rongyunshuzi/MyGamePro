@@ -1,9 +1,12 @@
 import importlib, time, random
 import concurrent.futures
-from logconfig import logger
+from config import logger
 
 fortune_gems_2 = "games.fortuneGems2.fortuneGems2"
 safari = "games.safari.safari"
+# joker = "....."
+# money_coming = '...'
+
 
 game_module = importlib.import_module(safari)
 
@@ -21,11 +24,15 @@ def common_spins(round_count):
 
 
 def persistent_spin(user_number, round_count):
+    """
+    :param user_number: 同时执行人数
+    :param round_count: 执行总次数
+    """
     with concurrent.futures.ThreadPoolExecutor(max_workers=user_number) as executor:
         try:
             tasks = [executor.submit(common_spins, round_count) for _ in range(user_number)]
             for task in tasks:
-                time.sleep(random.uniform(0.2, 0.3))
+                time.sleep(random.uniform(0.2, 0.4))
                 task.result()
         except KeyboardInterrupt as e:
             logger.error(e)

@@ -1,6 +1,6 @@
 import time
 import concurrent.futures
-from logconfig import logger
+from config import logger
 from services import GameServer
 from statistic import CatStatistic
 
@@ -8,8 +8,8 @@ from statistic import CatStatistic
 class CatGame(GameServer):
     cat_statistic = CatStatistic()
 
-    def __init__(self, account=None, password=None):
-        GameServer.__init__(self, account, password)
+    def __init__(self):
+        GameServer.__init__(self)
         self.in_room = False
         self.server.add_message_callback(12002, 2, self.spin_message_callback)
         self.server.add_message_callback(11010, 2, self.jackpot_message_callback)

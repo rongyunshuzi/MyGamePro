@@ -1,7 +1,7 @@
 import time
 from services import GameServer
 from .statistic import FortuneGems2Statistic
-from logconfig import logger
+from config import logger
 
 
 class FortuneGems2Game(GameServer):

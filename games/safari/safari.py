@@ -1,8 +1,6 @@
-import concurrent.futures
-import random
 import time
 
-from logconfig import logger
+from config import logger
 from services import GameServer
 from .statistic import SafariStatistic
 
@@ -17,9 +15,10 @@ class SafariGame(GameServer):
         self.server.add_message_callback(11010, 2, self.jackpot_message_callback)
         self.server.add_message_callback(12071, 2, self.safari_initialize_message_callback)
 
-    def join_room_message_callback(self, message):
+    @classmethod
+    def join_room_message_callback(cls, message):
         logger.success('join_room_message_callback:{}'.format(message))
-        self.in_room = True
+        cls.in_room = True
 
     @classmethod
     def safari_initialize_message_callback(cls, message):

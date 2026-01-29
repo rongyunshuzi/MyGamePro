@@ -1,7 +1,7 @@
 import time
 from services import GameServer
 from statistic import MoneyComingStatistic
-from logconfig import logger
+from config import logger
 import random
 import concurrent.futures.thread
 
@@ -14,9 +14,10 @@ class MoneyComing(GameServer):
         self.in_room = False
         self.server.add_message_callback(12082, 2, self.spin_message_callback)
 
-    def join_room_message_callback(self, message):
+    @classmethod
+    def join_room_message_callback(cls, message):
         logger.success('join_room_message_callback:{}'.format(message))
-        self.in_room = True
+        cls.in_room = True
 
     @classmethod
     def spin_message_callback(cls, message):

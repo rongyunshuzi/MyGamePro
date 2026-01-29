@@ -1,7 +1,7 @@
 import time
 from services import GameServer
 from statistic import JokerStatistic
-from logconfig import logger
+from config import logger
 
 
 class Joker(GameServer):

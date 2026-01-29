@@ -1,15 +1,14 @@
-import concurrent.futures
 import time
 from services import GameServer
 from statistic import CashWheelStatistic
-from logconfig import logger
+from config import logger
 
 
 class CashWheel(GameServer):
     statistics = CashWheelStatistic()
 
-    def __init__(self, account=None, password=None):
-        GameServer.__init__(self, account, password)
+    def __init__(self):
+        GameServer.__init__(self)
         self.server.add_message_callback(12222, 2, self.spin_message_callback)
 
     @classmethod
@@ -43,27 +42,3 @@ class CashWheel(GameServer):
             }
         )
         time.sleep(0.1)
-
-    @classmethod
-    def spins(cls, round_count):
-        cash_wheel = CashWheel()
-        cash_wheel.ready()
-        while cls.statistics.round_count < round_count:
-            cash_wheel.spin()
-
-    @classmethod
-    def persistent_spin(cls, user_number, round_count):
-        with concurrent.futures.ThreadPoolExecutor(max_workers=user_number) as executor:
-            try:
-                tasks = [executor.submit(cls.spins, round_count) for _ in range(user_number)]
-                for task in tasks:
-                    task.result()
-            except KeyboardInterrupt:
-                logger.warning("用户手动退出")
-
-            finally:
-                cls.statistics.see()
-
-
-if __name__ == '__main__':
-    CashWheel.persistent_spin(user_number=10, round_count=1000)

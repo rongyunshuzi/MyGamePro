@@ -1,6 +1,6 @@
 import time
 
-from logconfig import logger
+from config import logger
 from services import GameServer
 from statistic import BuffaloStatistic
 import concurrent.futures
@@ -9,8 +9,8 @@ import concurrent.futures
 class BuffaloGame(GameServer):
     statistics = BuffaloStatistic()
 
-    def __init__(self, account=None, password=None):
-        GameServer.__init__(self, account, password)
+    def __init__(self):
+        GameServer.__init__(self)
         self.initialized = False
         self.server.add_message_callback(12142, 2, self.spin_message_callback)
         self.server.add_message_callback(11010, 2, self.jackpot_message_callback)
@@ -27,7 +27,6 @@ class BuffaloGame(GameServer):
 
     def buffalo_init_message_callback(self, message):
         self.initialized = True
-        pass
 
     def ready(self):
         time.sleep(1)

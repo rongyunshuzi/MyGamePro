@@ -1,6 +1,6 @@
 import time
 from services import GameServer
-from statistic import JokerStatistic
+from .statistic import JokerStatistic
 from config import logger
 
 
@@ -9,11 +9,10 @@ class Joker(GameServer):
 
     def __init__(self):
         GameServer.__init__(self)
-        self.server.add_message_callback(12042, 2, self.spin_message_callback)
+        self.server.add_message_callback(12032, 2, self.spin_message_callback)
 
-    @classmethod
-    def spin_message_callback(cls, message):
-        logger.debug(message)
+    def spin_message_callback(self, message):
+        logger.success(message)
         Joker.statistics.analyze(message['content'])
 
     def ready(self):

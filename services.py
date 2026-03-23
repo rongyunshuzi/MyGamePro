@@ -5,6 +5,7 @@ import time
 from iws import IWebsocket
 import config
 import httpx
+import uuid
 
 
 class AuthServer:
@@ -47,21 +48,24 @@ class AuthServer:
 
     def register_or_login(self, invite_code="", channels='501'):
         self._get_sms_code()
-
+        device_id = uuid.uuid4()
         response = self.http.post(
             url=config.AUTHENTICATION_SERVER + '/gameHall/auth/phone/registerAndLogin',
             json={
                 'code': '111111',
-                'deviceId': "7be8e85b-29a0-48af-8703-80d4808fa387",
+                'deviceId': str(device_id),
                 'inviteCode': invite_code,
                 'phone': self.phone,
                 'userChannels': channels,
-                'lastDeviceType': 'h5'
+                'lastDeviceType': 'H5'
             },
             headers={'Content-Type': 'application/json'},
         )
         if response.status_code == 200:
-            self.token = response.json()['data']['token']
+            res_json = response.json()['data']
+            self.token = res_json.get('token', None)
+            if not self.token:
+                config.logger.error("Token不能为空")
             self._login_info(self.token)
 
         else:

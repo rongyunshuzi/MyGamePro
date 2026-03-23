@@ -8,7 +8,7 @@ safari = "games.safari.safari"
 # money_coming = '...'
 
 
-game_module = importlib.import_module(safari)
+game_module = importlib.import_module(fortune_gems_2)
 
 for game_name in game_module.__dir__():
     if game_name.endswith("Game"):
@@ -42,4 +42,4 @@ def persistent_spin(user_number, round_count):
 
 
 if __name__ == '__main__':
-    persistent_spin(user_number=10, round_count=1000)
+    persistent_spin(user_number=1, round_count=1000)

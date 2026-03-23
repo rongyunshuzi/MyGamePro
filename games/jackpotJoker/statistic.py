@@ -10,23 +10,28 @@ class JokerResponseResult:
 class JokerStatistic:
     def __init__(self):
         self.content = None
+        self.bet_amount = 0
         self.round_count = 0
         self.bet_amount = 0
         self.win_money = 0
 
 
     def analyze(self, message):
-        spin_result = JokerResponseResult(message)
+        result = JokerResponseResult(message)
+        self.bet_amount += result.bet_amount / 20
         self.round_count += 1
 
 
     def see(self):
         r = f"""
-        ================================Slot雷神测试结果汇总=================================
-        总对局数:{self.round_count}, 总下注金额:{round(self.bet_amount, 2)}, 总赢钱金额:{round(self.win_money, 2)}
-        
-
-        返奖率:{round(self.win_money / self.bet_amount * 100, 2)}%
-        =========================================================================================
+        ================================FortuneGems2测试结果汇总=================================
+        = 总SPIN次数:{self.round_count}  
+        = 总下注金额：{self.bet_amount}                              
+        = WILD中奖次数:{self.wild_count}
+        = 中奖线中奖次数（多条线只算1次）:{self.pay_line_count}
+        = 不包含轮盘中奖总额: {self.pay_line_amount}
+        = 轮盘中奖次数: {self.special_wheel_count}
+        = 轮盘中奖总额: {self.special_wheel_amount}
+        =======================================================================================
         """
         print(r)

@@ -55,7 +55,8 @@ class AuthServer:
                 'deviceId': "7be8e85b-29a0-48af-8703-80d4808fa387",
                 'inviteCode': invite_code,
                 'phone': self.phone,
-                'userChannels': channels
+                'userChannels': channels,
+                'lastDeviceType': 'h5'
             },
             headers={'Content-Type': 'application/json'},
         )
